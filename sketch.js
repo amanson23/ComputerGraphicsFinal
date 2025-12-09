@@ -12,6 +12,7 @@ let leftPaddle, rightPaddle, ball;
 const PADDLE_WIDTH = 10;
 const PADDLE_HEIGHT = 80;
 const BALL_RADIUS = 10;
+const PADDLE_MARGIN = 20; // Distance from paddle to edge of screen
 
 const bounceSound = new Audio('assets/arcadeUI7.mp3');
 const scoreSound = new Audio('assets/arcadeUI12.mp3');
@@ -46,8 +47,8 @@ function setup() {
     predictions = results;
   });
 
-  leftPaddle = new Paddle(20, 'aqua');
-  rightPaddle = new Paddle(width - 30, 'red');
+  leftPaddle = new Paddle(PADDLE_MARGIN, 'aqua');
+  rightPaddle = new Paddle(width - PADDLE_WIDTH - PADDLE_MARGIN, 'red');
   ball = new Ball();
 }
 
@@ -55,8 +56,8 @@ function windowResized() {
   resizeCanvas(windowWidth, windowHeight * 0.6);
   video.size(width, height);
   // Re-initialize paddles and ball to adjust to new dimensions
-  leftPaddle = new Paddle(20, 'aqua');
-  rightPaddle = new Paddle(width - 30, 'red');
+  leftPaddle = new Paddle(PADDLE_MARGIN, 'aqua');
+  rightPaddle = new Paddle(width - PADDLE_WIDTH - PADDLE_MARGIN, 'red');
   ball.reset();
 }
 
