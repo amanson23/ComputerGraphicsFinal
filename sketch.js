@@ -20,8 +20,11 @@ function setup() {
   }
 
   createCanvas(newCanvasWidth, newCanvasHeight);
+  frameRate(30); // Limit frame rate for mobile optimization
+
+  let videoScaleFactor = 0.5; // Reduce video resolution for performance
   video = createCapture(VIDEO);
-  video.size(newCanvasWidth, newCanvasHeight);
+  video.size(newCanvasWidth * videoScaleFactor, newCanvasHeight * videoScaleFactor);
   video.hide();
 
   // Checks if the camera was turned on and if the model is ready
