@@ -1,13 +1,22 @@
 let handpose;
 let video;
 let predictions = [];
+let lastDrawnPredictions = [];
 
 let leftScore = 0;
 let rightScore = 0;
 let particles = [];
 let leftPaddle, rightPaddle, ball;
+
+// Game constants
+const PADDLE_WIDTH = 10;
+const PADDLE_HEIGHT = 80;
+const BALL_RADIUS = 10;
+
 const bounceSound = new Audio('assets/arcadeUI7.mp3');
 const scoreSound = new Audio('assets/arcadeUI12.mp3');
+
+// Performance optimization
 let frameSkip = 3;
 let mobileFrameCount = 0;
 
@@ -33,7 +42,7 @@ function setup() {
     console.log("Model ready!");
   });
 
-  handpose.on("predict", (results) => {
+  handpose.on("prediction", (results) => { // Note: ml5.js v0.12.2 uses 'prediction'
     predictions = results;
   });
 
@@ -45,6 +54,10 @@ function setup() {
 function windowResized() {
   resizeCanvas(windowWidth, windowHeight * 0.6);
   video.size(width, height);
+  // Re-initialize paddles and ball to adjust to new dimensions
+  leftPaddle = new Paddle(20, 'aqua');
+  rightPaddle = new Paddle(width - 30, 'red');
+  ball.reset();
 }
 
 
@@ -52,33 +65,35 @@ function windowResized() {
 function draw() {
   background(0);
 
-  // Draws the video feed, translates it to be the correct orientation
-  push();
-  translate(width, 0);
-  scale(-1, 1);
-  image(video, 0, 0, width, height);
-  pop();
-
   mobileFrameCount++;
+  // Throttle handpose processing and video drawing for performance
   if (mobileFrameCount % frameSkip === 0) {
-    // allow handpose to update here
+    // Draws the video feed, translates it to be the correct orientation
+    push();
+    translate(width, 0);
+    scale(-1, 1);
+    image(video, 0, 0, width, height);
+    pop();
+    lastDrawnPredictions = predictions; // Store the latest predictions
   }
 
 
 
-  // Finds the tip of the pinky and thumb
-  if (predictions.length > 0) {
-    let hand = predictions[0];
+  // Use the stored predictions to update paddle positions
+  // This ensures paddle movement is still smooth even if video/prediction is skipped
+  if (lastDrawnPredictions.length > 0) {
+    let hand = lastDrawnPredictions[0];
     let thumbTip = hand.annotations.thumb[3];
     let pinkyTip = hand.annotations.pinky[3];
 
     if (thumbTip && pinkyTip) {
-      let thumbY = thumbTip[1];
-      let pinkyY = pinkyTip[1];
+      // The video is flipped, so thumb controls the right paddle and pinky controls the left.
+      let rightPaddleY = thumbTip[1];
+      let leftPaddleY = pinkyTip[1];
 
       // Sets the left paddle's y level to the thumb and right paddle's y level to the pinky
-      leftPaddle.y = constrain(thumbY - leftPaddle.h / 2, 0, height - leftPaddle.h);
-      rightPaddle.y = constrain(pinkyY - rightPaddle.h / 2, 0, height - rightPaddle.h);
+      leftPaddle.y = constrain(leftPaddleY - leftPaddle.h / 2, 0, height - leftPaddle.h);
+      rightPaddle.y = constrain(rightPaddleY - rightPaddle.h / 2, 0, height - rightPaddle.h);
     }
   }
 
@@ -119,9 +134,9 @@ function draw() {
 class Paddle {
   constructor(x, color) {
     this.x = x;
-    this.y = height / 2 - 40;
-    this.w = 10;
-    this.h = 80;
+    this.y = height / 2 - PADDLE_HEIGHT / 2;
+    this.w = PADDLE_WIDTH;
+    this.h = PADDLE_HEIGHT;
     this.color = color;
   }
 
@@ -141,7 +156,7 @@ class Ball {
   reset() {
     this.x = width / 2;
     this.y = height / 2;
-    this.r = 10;
+    this.r = BALL_RADIUS;
     this.speed = 5;
     this.xSpeed = random() > 0.5 ? this.speed : -this.speed;
     this.ySpeed = random(-this.speed, this.speed);
@@ -181,8 +196,8 @@ class Ball {
     if (
       this.x - this.r < paddle.x + paddle.w &&
       this.x + this.r > paddle.x &&
-      this.y > paddle.y - (paddle.h / 2) &&
-      this.y < paddle.y + (paddle.h / 2)
+      this.y > paddle.y &&
+      this.y < paddle.y + paddle.h
     ) { // If ball and paddle collide, reversed direction and gives it a random speed
       this.xSpeed *= -1;
       this.x += this.xSpeed > 0 ? 5 : -5;
