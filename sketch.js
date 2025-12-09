@@ -7,6 +7,7 @@ let leftScore = 0;
 let rightScore = 0;
 let particles = [];
 let leftPaddle, rightPaddle, ball;
+let videoBuffer;
 
 // Game constants
 const PADDLE_WIDTH = 10;
@@ -25,6 +26,7 @@ let mobileFrameCount = 0;
 // Creates the canvas, turns on the camera, sets the size
 function setup() {
   createCanvas(windowWidth, windowHeight * 0.6);
+  videoBuffer = createGraphics(width, height);
 
   const constraints = {
     audio: false,
@@ -54,6 +56,7 @@ function setup() {
 
 function windowResized() {
   resizeCanvas(windowWidth, windowHeight * 0.6);
+  videoBuffer.resize(width, height);
   video.size(width, height);
   // Re-initialize paddles and ball to adjust to new dimensions
   leftPaddle = new Paddle(PADDLE_MARGIN, 'aqua');
@@ -64,20 +67,20 @@ function windowResized() {
 
 // Draws everything onto the web page
 function draw() {
-  background(0);
-
   mobileFrameCount++;
   // Throttle handpose processing and video drawing for performance
   if (mobileFrameCount % frameSkip === 0) {
-    // Draws the video feed, translates it to be the correct orientation
-    push();
-    translate(width, 0);
-    scale(-1, 1);
-    image(video, 0, 0, width, height);
-    pop();
+    // Draw the video to the off-screen buffer, flipped
+    videoBuffer.push();
+    videoBuffer.translate(width, 0);
+    videoBuffer.scale(-1, 1);
+    videoBuffer.image(video, 0, 0, width, height);
+    videoBuffer.pop();
     lastDrawnPredictions = predictions; // Store the latest predictions
   }
 
+  // Draw the buffer to the main canvas on every frame
+  image(videoBuffer, 0, 0);
 
 
   // Use the stored predictions to update paddle positions
