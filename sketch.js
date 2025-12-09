@@ -11,9 +11,17 @@ const scoreSound = new Audio('assets/arcadeUI12.mp3');
 
 // Creates the canvas, turns on the camera, sets the size
 function setup() {
-  createCanvas(windowWidth, windowHeight);
+  let newCanvasWidth = windowWidth;
+  let newCanvasHeight = windowWidth / 2; // Maintain 2:1 aspect ratio
+
+  if (newCanvasHeight > windowHeight) {
+    newCanvasHeight = windowHeight;
+    newCanvasWidth = windowHeight * 2; // Adjust width to maintain 2:1 aspect ratio
+  }
+
+  createCanvas(newCanvasWidth, newCanvasHeight);
   video = createCapture(VIDEO);
-  video.size(width, height);
+  video.size(newCanvasWidth, newCanvasHeight);
   video.hide();
 
   // Checks if the camera was turned on and if the model is ready
@@ -204,9 +212,18 @@ class Particle {
 }
 
 function windowResized() {
-  resizeCanvas(windowWidth, windowHeight);
-  // Re-position elements if necessary based on new canvas size
-  // For example:
+  let newCanvasWidth = windowWidth;
+  let newCanvasHeight = windowWidth / 2; // Maintain 2:1 aspect ratio
+
+  if (newCanvasHeight > windowHeight) {
+    newCanvasHeight = windowHeight;
+    newCanvasWidth = windowHeight * 2; // Adjust width to maintain 2:1 aspect ratio
+  }
+
+  resizeCanvas(newCanvasWidth, newCanvasHeight);
+  video.size(newCanvasWidth, newCanvasHeight);
+
+  // Re-position paddles and reset ball based on new canvas size
   leftPaddle.x = 20;
   rightPaddle.x = width - 30;
   ball.reset(); // Reset ball position and speed
