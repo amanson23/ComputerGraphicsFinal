@@ -1,0 +1,6 @@
+For all of my prompts I used Gemini because it is integrated very well into VS Code.
+
+Prompts:
+I asked Gemini how to optimize my project many times. This created many of the pong game aspects like the update() function and setting the frame rate. 
+I also asked Gemini to create a sketch for a pong game using JavaScript which created the paddles and ball. 
+I asked Gemini how to create a division in the HTML to display the JavaScript canvas. 
